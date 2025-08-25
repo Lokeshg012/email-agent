@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langgraph
+openai
+mysql-connector-python
+python-dotenv
+smtplib-client
+imaplib2
+email
