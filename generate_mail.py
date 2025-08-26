@@ -8,16 +8,16 @@ load_dotenv()
 
 # ---------- CONFIG ----------
 db_config = {
-    'host': 'email-agent-email-agent.b.aivencloud.com',
-    'port': 13503,
-    'user': 'avnadmin',
-    'password': os.getenv('AIVEN_PASSWORD'),
-    'database': 'defaultdb',
-    'ssl_ca': 'ca.pem'
+    'host': os.getenv('DB_HOST'),
+    'port': int(os.getenv('DB_PORT')),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),  # <- correct variable
+    'database': os.getenv('DB_NAME'),
+    'ssl_ca': os.getenv('DB_SSL_CA')
 }
 
 # OpenAI client
-client = OpenAI(api_key=os.getenv('OPEN_API_KEY'))
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # ---------- FUNCTIONS ----------
 def generate_mail(contact):

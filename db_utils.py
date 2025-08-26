@@ -1,55 +1,34 @@
-# db_utils.py
-import os
-import mysql.connector
-from dotenv import load_dotenv
+# db_utils.py (add this)
+from datetime import datetime
 
-load_dotenv()
+def log_initial_email(contact_id: int, client_email: str, email_content: str):
+    """Insert the initial email content into content_info_of_mails"""
+    import mysql.connector
+    from dotenv import load_dotenv
+    import os
 
-DB_CONFIG = {
-    'host': os.getenv("DB_HOST"),
-    'port': int(os.getenv("DB_PORT")),
-    'user': os.getenv("DB_USER"),
-    'password': os.getenv("DB_PASSWORD"),
-    'database': os.getenv("DB_NAME"),
-    'ssl_ca': os.getenv("DB_SSL_CA", None)  # Optional SSL cert for Aiven
-}
+    load_dotenv()
 
+    db_config = {
+        'host': os.getenv('DB_HOST'),
+        'port': int(os.getenv('DB_PORT')),
+        'user': os.getenv('DB_USER'),
+        'password': os.getenv('DB_PASSWORD'),
+        'database': os.getenv('DB_NAME'),
+        'ssl_ca': os.getenv('DB_SSL_CA')
+    }
 
-def get_connection():
-    return mysql.connector.connect(**DB_CONFIG)
-
-
-def fetch_contacts():
-    """Fetch contacts from the database"""
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM contacts WHERE status='pending'")
-    rows = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return rows
-
-
-def store_email_log(contact_id, subject, body, sent_status):
-    """Store email logs in a separate table"""
-    conn = get_connection()
+    conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO email_logs (contact_id, subject, body, sent_status, created_at)
-        VALUES (%s, %s, %s, %s, NOW())
-    """, (contact_id, subject, body, sent_status))
+
+    query = """
+    INSERT INTO content_info_of_mails
+        (contact_id, client_email, initial_email_content, created_at, updated_at)
+    VALUES (%s, %s, %s, %s, %s)
+    """
+    now = datetime.now()
+    cursor.execute(query, (contact_id, client_email, email_content, now, now))
     conn.commit()
     cursor.close()
     conn.close()
-
-
-def update_contact_status(contact_id, status, last_email_date=None):
-    """Update contact status (e.g., replied, no_reply, meeting_booked)"""
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE contacts SET status=%s, last_email_date=%s WHERE id=%s
-    """, (status, last_email_date, contact_id))
-    conn.commit()
-    cursor.close()
-    conn.close()
+    print(f"✅ Logged initial email for contact_id {contact_id}")
