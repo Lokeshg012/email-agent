@@ -17,7 +17,7 @@ db_config = {
 }
 
 # OpenAI client
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = OpenAI(api_key=os.getenv('OPEN_API_KEY'))
 
 # ---------- FUNCTIONS ----------
 def generate_mail(contact):
@@ -50,43 +50,49 @@ Instructions:
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7
     )
-    return response.choices[0].message.content.strip()
+    mail_content = response.choices[0].message.content.strip()
 
+    # Split subject and body
+    lines = mail_content.split("\n", 1)
+    subject = lines[0].replace("Subject:", "").strip()
+    body = lines[1].strip() if len(lines) > 1 else ""
 
-def generate_followup_mail(contact, day):
-    """Generate follow-up email for given day (Day 2, Day 3, etc)."""
-    prompt = f"""
-You are writing a follow-up cold email.  
+    return subject, body
 
-Sender details:  
-- Name: Piyush Mishra  
-- Company: XYZ Company  
-- Role: Business Development Partner for Pulp Strategy (a digital marketing and strategy agency).  
+# def generate_followup_mail(contact, day):
+#     """Generate follow-up email for given day (Day 2, Day 3, etc)."""
+#     prompt = f"""
+# You are writing a follow-up cold email.  
 
-Recipient details:  
-- Name: {contact['name']}  
-- Company: {contact['company_name']}  
-- Website: {contact['company_url']}  
-- Industry: {contact['industry']}  
+# Sender details:  
+# - Name: Piyush Mishra  
+# - Company: XYZ Company  
+# - Role: Business Development Partner for Pulp Strategy (a digital marketing and strategy agency).  
 
-Instructions:  
-- This is **Day {day} follow-up** (after no reply to earlier emails).  
-- Keep the tone polite, professional, and not pushy.  
-- Ensure it feels different from previous emails.  
-- Adjust the approach depending on the day:  
-  - **Day 2** → Friendly reminder.  
-  - **Day 3** → Share an insight, case study, or value proposition.  
-  - **Day 4** → Light final nudge with “happy to connect later if now isn’t a good time”.  
-- Structure: **Subject line + Email body**.  
-- End with a polite call-to-action for a quick call/meeting.  
-"""
+# Recipient details:  
+# - Name: {contact['name']}  
+# - Company: {contact['company_name']}  
+# - Website: {contact['company_url']}  
+# - Industry: {contact['industry']}  
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
-    )
-    return response.choices[0].message.content.strip()
+# Instructions:  
+# - This is **Day {day} follow-up** (after no reply to earlier emails).  
+# - Keep the tone polite, professional, and not pushy.  
+# - Ensure it feels different from previous emails.  
+# - Adjust the approach depending on the day:  
+#   - **Day 2** → Friendly reminder.  
+#   - **Day 3** → Share an insight, case study, or value proposition.  
+#   - **Day 4** → Light final nudge with “happy to connect later if now isn’t a good time”.  
+# - Structure: **Subject line + Email body**.  
+# - End with a polite call-to-action for a quick call/meeting.  
+# """
+
+#     response = client.chat.completions.create(
+#         model="gpt-4o-mini",
+#         messages=[{"role": "user", "content": prompt}],
+#         temperature=0.7
+#     )
+#     return response.choices[0].message.content.strip()
 
 
 def fetch_first_contact():
@@ -94,7 +100,7 @@ def fetch_first_contact():
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT id, name, company_name, company_url, industry FROM contacts WHERE industry IS NOT NULL LIMIT 1;")
+    cursor.execute("SELECT id, name, email, company_name, company_url, industry FROM contacts WHERE industry IS NOT NULL LIMIT 1;")
     row = cursor.fetchone()
 
     cursor.close()
@@ -105,16 +111,16 @@ def fetch_first_contact():
 if __name__ == "__main__":
     contact = fetch_first_contact()
     if contact:
-        print(f"✉️ Generating initial mail for: {contact['name']} ({contact['company_name']})")
+        print(f" Generating initial mail for: {contact['name']} ({contact['company_name']})")
         mail_content = generate_mail(contact)
         print("\n------ DAY 1 MAIL ------\n")
         print(mail_content)
 
-        # Generate follow-ups
-        for day in range(2, 5):
-            print(f"\n------ DAY {day} FOLLOW-UP ------\n")
-            followup_content = generate_followup_mail(contact, day)
-            print(followup_content)
+        # # Generate follow-ups
+        # for day in range(2, 5):
+        #     print(f"\n------ DAY {day} FOLLOW-UP ------\n")
+        #     followup_content = generate_followup_mail(contact, day)
+        #     print(followup_content)
 
     else:
-        print("❌ No contact with industry found.")
+        print(" No contact with industry found.")
