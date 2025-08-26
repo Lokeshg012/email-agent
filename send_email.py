@@ -25,17 +25,17 @@ def send_email(to_address, subject, body):
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ADDRESS, to_address, msg.as_string())
 
-        print(f"✅ Email sent to {to_address}")
+        print(f" Email sent to {to_address}")
         return True
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        print(f" Error sending email: {e}")
         return False
 
 
 def send_initial_mail():
     contact = fetch_first_contact()
     if not contact:
-        print("❌ No contact with industry found.")
+        print(" No contact with industry found.")
         return
 
     subject, body = generate_mail(contact)

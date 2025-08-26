@@ -48,9 +48,9 @@ def enrich_and_update():
             company_name = row["company_name"]
             company_url = row["company_url"]
 
-            print(f"🔎 Fetching industry for: {company_name} ({company_url})")
+            print(f" Fetching industry for: {company_name} ({company_url})")
             industry = get_industry_from_llm(company_name, company_url)
-            print(f"✅ Industry: {industry}")
+            print(f"Industry: {industry}")
 
             # Update database
             cursor.execute(
@@ -63,7 +63,7 @@ def enrich_and_update():
         conn.close()
 
     except mysql.connector.Error as e:
-        print("❌ Database error:", e)
+        print("Database error:", e)
 
 # ---------- MAIN ----------
 if __name__ == "__main__":
